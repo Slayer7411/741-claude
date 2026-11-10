@@ -1,0 +1,9 @@
+{
+  "name": "741",
+  "version": "2026.11.10.7",
+  "description": "Knowledge of the 741 tools: the .741 collection file, how to change it safely, and what each 741 app does (MINOS, ORPHEUS, CHARON, STYX, HELIOS).",
+  "author": {
+    "name": "741"
+  },
+  "skills": "./skills"
+}
