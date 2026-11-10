@@ -74,7 +74,7 @@ Optional, each off by default, own switch in setup and settings.
 | claude terminal | install Claude Code CLI (official installer), check `claude --version` |
 | daw mcp | MCP server for the DAW: remote script into the DAW user library, `claude mcp add` entry. UI and public texts without the product name |
 
-- 741 skill source: public repo `OWNER/741-claude`, built from the MNEMOSYNE docs and the app docs by `tools/build-skill.sh`. Every app release runs it, bumps the plugin version, pushes.
+- 741 skill source: public repo `Slayer7411/741-claude`, built from the MNEMOSYNE docs and the app docs by `tools/build-skill.sh`. Every app release runs it, bumps the plugin version, pushes.
 - skill content: `.741` format, safe write path (over the agent), features of every 741 app.
 
 ## ◆ STEPS

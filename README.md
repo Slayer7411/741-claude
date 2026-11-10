@@ -9,7 +9,7 @@ Claude Code plugin marketplace for the 741 tools. It ships one skill, `741`, whi
 ## ◆ INSTALL
 
 ```
-claude plugin marketplace add OWNER/741-claude
+claude plugin marketplace add Slayer7411/741-claude
 claude plugin install 741@741-claude
 ```
 

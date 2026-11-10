@@ -22,7 +22,7 @@ for r in MNEMOSYNE-741 MINOS-741 ORPHEUS-741 Charon-741 STYX-741 HELIOS-741; do
 done
 
 # Forbidden names. Written with bracket classes so this file does not contain them literally.
-FORBIDDEN='t[r]aktor|rek[o]rdbox|nati[v]e instruments|kont[r]ol|ser[a]to|abl[e]ton|mix[x]x|xo[n]e|engine d[j]|virtual ?d[j]|pio[n]eer|den[o]n|numar[k]|dj[m]-|chr[i]stian|slay[e]r7411|/[U]sers/|cs[.]privat|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'
+FORBIDDEN='t[r]aktor|rek[o]rdbox|nati[v]e instruments|kont[r]ol|ser[a]to|abl[e]ton|mix[x]x|xo[n]e|engine d[j]|virtual ?d[j]|pio[n]eer|den[o]n|numar[k]|dj[m]-|chr[i]stian|/[U]sers/|cs[.]privat|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'
 
 # Strip badges, images, html wrappers and dev-process lines; then substitute names.
 sanitize() {
@@ -47,7 +47,6 @@ sanitize() {
     -e 's/engine d[j]/other dj app/gI' \
     -e 's/virtual ?d[j]/other dj app/gI' \
     -e 's/Chr[i]stian/owner/g' \
-    -e 's/Slay[e]r7411/OWNER/gI' \
     -e 's/\[([^]]*)\]\([^)]*\.md[^)]*\)/\1/g' \
     -e 's/\[([^]]*)\]\(#[^)]*\)/\1/g'
 }

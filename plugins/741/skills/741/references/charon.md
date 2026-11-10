@@ -132,7 +132,7 @@ open build/741-Charon.app
 
 first start: system settings -> privacy & security -> screen & system audio recording -> allow 741-Charon (the app that starts the engine). the grant sticks to the signature:
 * with a code-signing certificate named `Charon-741 Dev` in the keychain, `make-app.sh` signs with it and the grant survives rebuilds
-* the bundle id `com.OWNER.charon741` stays the same, so the grant follows the renamed app; check it after the first install. an old `Charon-741.app` in /Applications can be deleted by hand
+* the bundle id `com.slayer7411.charon741` stays the same, so the grant follows the renamed app; check it after the first install. an old `Charon-741.app` in /Applications can be deleted by hand
 * without it, the build is ad-hoc signed -> after each rebuild the grant may have to be given again
 
 ## ◆ TESTS
