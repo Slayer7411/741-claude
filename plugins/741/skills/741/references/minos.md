@@ -252,6 +252,7 @@ everything MINOS does today (beta). details -> MANUAL.
 
 * an AI client (Claude via MCP, `minos-mcp`) drives decks, mixer, transitions and queue; off by default
 * ramps and quantized changes run inside MINOS on the beat clock -> AI CONTROL
+* KI-DJ: built-in AI DJ (own process `minos-dj`) plans transitions from a style text, API key or Claude Code; fallback to the automix pick
 
 ## ◆ VIEW + SETTINGS
 
@@ -697,3 +698,16 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
 
 * slip, censor, brake, load next/previous track: not in MINOS yet
 * transition to the free deck only (decks A and B); decks C and D are not used by auto-mix
+
+## ◆ KI-DJ
+
+* settings -> LIVE & SYNC -> AI CONTROL -> KI-DJ: on/off, needs KI-Steuerung on and permission "decks + mixer" (load, play, transition)
+* `minos-dj` is a separate process next to the app (make-app.sh bundles it); it talks to the socket as a normal client
+* style text (+ presets) says how to mix; a change is sent to the running process
+* model access: API key (Keychain, Messages API) or `claude -p` (Claude Code subscription); default model `claude-haiku-5-5`
+* loop: `state` -> `suggest` (candidates, `scope` playlist or collection) -> model answer as JSON -> `transition`
+* wakes at start, at `remaining_lt` (decide before the end, default 90 s), at `transition_done` and on style change
+* the answer must name a candidate; bars 8/16/32; invalid tracks, no answer within the deadline (default 20 s) or an error -> top candidate of suggest (automix pick)
+* moves (EQ, filter, gain, fader, FX) only with "may move EQ, filter and FX"; ramps run on the beat clock
+* log: last 50 decisions (track, reason, ms, fallback, ok); restarts up to 3 times if the process ends
+* no key in arguments, environment or log; the key goes over stdin once
