@@ -70,7 +70,7 @@ emit() {
 mkdir -p "$OUT"
 emit format   P:format.md
 emit writing  P:writing.md
-emit minos    P:minos.md S:MINOS-741/docs/FEATURES.md S:MINOS-741/docs/settings.md S:MINOS-741/docs/library.md
+emit minos    P:minos.md S:MINOS-741/docs/FEATURES.md S:MINOS-741/docs/settings.md S:MINOS-741/docs/library.md S:MINOS-741/docs/ai-control.md
 emit orpheus  P:orpheus.md S:ORPHEUS-741/docs/SERVICES.md S:ORPHEUS-741/docs/LAN.md
 emit charon   P:charon.md S:Charon-741/README.md P:charon-playlist.md
 emit styx     P:styx.md S:STYX-741/docs/PLAN.md

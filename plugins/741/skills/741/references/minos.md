@@ -102,6 +102,7 @@ everything MINOS does today (beta). details -> MANUAL.
 * blend presets A-K and 741 palettes, own presets, changed live
 * sharp at any zoom, 1 to 16 seconds per side
 * drag to scrub; grab like a record (vinyl or jog)
+* double click in the waveform -> jump to the nearest beat or bar line (or the exact point, or off)
 * overview under each deck, click to jump
 * beatgrid with bar numbers, phrase lines (16 to 128 beats), markers every 8 / 16 / 32 bars
 * other decks shown on the waveform, purple when in phase
@@ -246,6 +247,11 @@ everything MINOS does today (beta). details -> MANUAL.
 * played marks are shared both ways
 * link follows one leading mac; the other follows its tempo and beat
 * LIVE keeps the display and the mac awake
+
+## ◆ AI CONTROL
+
+* an AI client (Claude via MCP, `minos-mcp`) drives decks, mixer, transitions and queue; off by default
+* ramps and quantized changes run inside MINOS on the beat clock -> AI CONTROL
 
 ## ◆ VIEW + SETTINGS
 
@@ -624,3 +630,70 @@ syntax: nml files.
 * saved in `~/Library/Application Support/MINOS-741/History`, optional copy into the collection's history folder
 * "history" = current session, "history archiv" = own sessions plus all sessions found in that folder
 
+
+# AI CONTROL
+
+let an AI client (Claude, via MCP) drive MINOS. off by default.
+
+## ◆ ENABLE
+
+* settings -> LIVE & SYNC -> AI CONTROL -> KI-Steuerung on
+* socket: `~/Library/Application Support/MINOS-741/control.sock` (mode 0600, your user only)
+* top bar shows `KI ●` while a client is connected
+* log of the last 50 commands is listed in the same section
+
+## ◆ CONNECT
+
+```
+claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
+```
+
+* `minos-mcp` is a stdio MCP server (protocol 2025-06-18), no dependencies
+* socket other than the default: `MINOS_CONTROL_SOCKET=/path/to/sock`
+* no socket -> error "MINOS not running or AI control off"
+
+## ◆ PERMISSION
+
+* read only -> state, list, suggest, wait, queue get, snapshot, ping
+* library -> + search, select-source, analyze, playlists, mark played
+* decks + mixer (default) -> + load, transport, mix, fx, transition, queue
+* all -> + link (set-prefs over the socket; no tool yet)
+* while a deck plays on the master, deck and mixer changes are refused if "allow while a deck plays on the master" is off
+
+## ◆ TOOLS
+
+* minos_state -> decks, mixer, master, link tempo, auto-mix queue (small json, no waveforms)
+* minos_transport -> any deck action (action enum): play, cue, hot cues, beat jump, loops, sync, master, keylock, key shift, tempo, bend, seek, reverse, flux, tap grid, instant double, eject, quantize
+* minos_mix -> fader, eq_low/mid/high, filter, gain, crossfader; optional ramp and quantize
+* minos_fx -> unit 0-3 (or -1 master): amount, deck assignment; optional ramp and quantize
+* minos_transition -> deck -> free deck, bars 8/16/32, start at next phrase or bar N, bass swap, filter sweep
+* minos_queue -> get, add, remove, clear: tracks played back to back with the auto-mix logic
+* minos_suggest -> next-track candidates from the auto-mix chooser, with bpm and key
+* minos_wait -> remaining_lt, bar_reached, transition_done, track_loaded, analysis_done
+* minos_list, minos_search, minos_select_source, minos_load, minos_play, minos_pause, minos_cue, minos_beatjump, minos_loop, minos_tempo, minos_keyshift, minos_sync, minos_master, minos_eject
+* minos_analyze, minos_add_to_playlist, minos_mark_played, minos_link, minos_snapshot, minos_ping
+
+## ◆ TIMING
+
+* ramps and quantize run inside MINOS on the beat clock (50 ms steps), not through the model
+* quantize: beat, bar or phrase -> the change starts at the next boundary
+* events (subscribe on the socket): track_loaded, transition_done, bar; at most 10 per second and kind
+* use minos_wait instead of polling
+
+## ◆ EXAMPLES
+
+* load track A on deck 0, play, then queue three more:
+  `minos_load {deck:0, key:"…"}` -> `minos_play {deck:0}` -> `minos_queue {op:"add", keys:[…], bars:16}`
+* fade deck 0 out over 8 bars at the next bar:
+  `minos_mix {control:"fader", deck:0, value:0, ramp:{bars:8}, quantize:"bar"}`
+* transition from deck A to the free deck, 32 bars, start at the next phrase:
+  `minos_transition {from:0, to:"…", bars:32, start:"phrase"}`
+* wait until the outgoing track has 30 s left:
+  `minos_wait {until:"remaining_lt", deck:0, value:30}`
+* hot cue 3 on deck B, then jump back to it:
+  `minos_transport {deck:1, action:"hotcue", n:3}`
+
+## ◆ NOT IN THIS VERSION
+
+* slip, censor, brake, load next/previous track: not in MINOS yet
+* transition to the free deck only (decks A and B); decks C and D are not used by auto-mix

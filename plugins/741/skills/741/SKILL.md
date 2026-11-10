@@ -22,7 +22,7 @@ Load only what the task needs.
 |---|---|
 | file layout, record types, fields, units, dates, ids, merge, smartlist rules, settings registry | `references/format.md` |
 | changing data, agent API, change recipes, backups, repair, imports and exports | `references/writing.md` |
-| MINOS: features, settings, files, where data lives | `references/minos.md` |
+| MINOS: features, settings, files, where data lives, ai control (socket, minos-mcp) | `references/minos.md` |
 | ORPHEUS: status, services, LAN protocol | `references/orpheus.md` |
 | CHARON: recorder, verify, handover playlist format | `references/charon.md` |
 | STYX: digging workstation plan and status | `references/styx.md` |

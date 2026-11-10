@@ -46,6 +46,7 @@ client ids are read from settings or `desktop/.env`, never committed. missing id
 
 ## ◆ GOOGLE DRIVE
 
+- two sources, one Drive: `gdrive` (api, account) and `gdrive-mount` (Drive for desktop folder). Kept apart: own status, auth, playback and settings. Shown as `Google Drive` and `Google Drive folder` in every view (`providerLabel`)
 - status: implemented · fakes · account
 - register: google cloud project · enable drive api · oauth consent screen · client type `desktop app`
 - test user: add the account in the consent screen (testing mode)
