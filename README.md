@@ -13,6 +13,19 @@ claude plugin marketplace add Slayer7411/741-claude
 claude plugin install 741@741-claude
 ```
 
+auto-update -> `/plugin` → marketplaces → 741-claude → enable auto-update, or in `~/.claude/settings.json`:
+
+```json
+"extraKnownMarketplaces": {
+  "741-claude": {
+    "source": { "source": "github", "repo": "Slayer7411/741-claude" },
+    "autoUpdate": true
+  }
+}
+```
+
+claude.ai (web, desktop) -> upload `plugins/741/skills/741` as a zip under settings → capabilities → skills. no auto-update there.
+
 ## ◆ LAYOUT
 
 - `.claude-plugin/marketplace.json` · marketplace with one plugin
