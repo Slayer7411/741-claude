@@ -38,6 +38,15 @@ Native macOS app. First app of a 741 setup: creates the 741 home, installs and u
 - installs and starts `mnemo-agent` (LaunchAgent), checks hello reply (`home`, `localStore`, protocol >= 1.4).
 - change of home later: stop agent, copy or move, rewrite `agent.json`, restart agent. Never live: refuse while a 741 app holds a deck loaded (`loaded` guard).
 
+## ◆ IMPORT
+
+- sources: NML collection, XML collection (MNEMOSYNE importers, read only), MINOS data folder on top of an NML collection. Found on this Mac: `Documents/vendor/*/collection.nml`, `ui.collectionPath` of MINOS, `MINOS-741` folders.
+- plan first: counts, roots, missing files, duplicates, warnings. Nothing is written by the plan.
+- write: new home or empty home (gen + 1), `collection.741` written atomically and read back. Source copied to `<home>/imports/<date>/` (option). Cancel until the write starts.
+- adopt: agent.json points at the home. With an installed agent it stops, rewrites agent.json, starts, and must answer hello for the home; otherwise agent.json is restored. Refused while MINOS or ORPHEUS is connected.
+- music folders (`library.folders`, `stream.folder`, `import.folder`): device settings, written once the agent answers.
+- code: `Sources/HeliosSetup/Import/`, CLI `helios setup import-nml|import-xml|import-minos|adopt`. Tests: `Tests/HeliosSetupTests/ImportTests.swift`.
+
 ## ◆ SHARED SETTINGS
 
 - written over the agent socket as setting records. Scope `g` (all devices) or `d:<deviceId>` (this device). Device wins over global (AGENT.md SETTINGS).
@@ -72,7 +81,8 @@ Optional, each off by default, own switch in setup and settings.
 | option | what |
 |---|---|
 | claude terminal | install Claude Code CLI (official installer), check `claude --version` |
-| daw mcp | MCP server for the DAW: remote script into the DAW user library, `claude mcp add` entry. UI and public texts without the product name |
+| install minos mcp | `claude mcp add minos -- <MINOS app>/Contents/MacOS/minos-mcp`, path from the installed app, follows app moves; hint: turn on AI CONTROL in MINOS |
+| install daw mcp | daw Live MCP server: remote script into the Live user library, `claude mcp add daw …`. Listed right next to "install minos mcp", named "daw" (owner 2026-11-10) |
 
 - 741 skill source: public repo `Slayer7411/741-claude`, built from the MNEMOSYNE docs and the app docs by `tools/build-skill.sh`. Every app release runs it, bumps the plugin version, pushes.
 - skill content: `.741` format, safe write path (over the agent), features of every 741 app.

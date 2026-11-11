@@ -667,7 +667,7 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
 * minos_transport -> any deck action (action enum): play, cue, hot cues, beat jump, loops, sync, master, keylock, key shift, tempo, bend, seek, reverse, flux, tap grid, instant double, eject, quantize
 * minos_mix -> fader, eq_low/mid/high, filter, gain, crossfader; optional ramp and quantize
 * minos_fx -> unit 0-3 (or -1 master): amount, deck assignment; optional ramp and quantize
-* minos_transition -> deck -> free deck, bars 8/16/32, start at next phrase or bar N, bass swap, filter sweep
+* minos_transition -> deck -> free deck, bars 8/16/32, start at next phrase or bar N, bass swap, filter sweep, curve, moves (gain, fx)
 * minos_queue -> get, add, remove, clear: tracks played back to back with the auto-mix logic
 * minos_suggest -> next-track candidates from the auto-mix chooser, with bpm and key
 * minos_wait -> remaining_lt, bar_reached, transition_done, track_loaded, analysis_done
@@ -677,9 +677,22 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
 ## ◆ TIMING
 
 * ramps and quantize run inside MINOS on the beat clock (50 ms steps), not through the model
+* transition moves: `at` = bars from the transition start (0..bars), `ramp` = bars; `deck` = out (leaving) or in (incoming); planned on the beat grid of the outgoing track, fired on the first 50 ms step at or after their beat
+* a move that conflicts with the transition curve is refused (reply `refused`, index + reason); the rest runs
 * quantize: beat, bar or phrase -> the change starts at the next boundary
 * events (subscribe on the socket): track_loaded, transition_done, bar; at most 10 per second and kind
 * use minos_wait instead of polling
+
+## ◆ CURVE
+
+* `curve` on minos_transition: `{out|in: {control: [{at, value}, ...]}}`; out = leaving track, in = incoming
+* controls: eq_low, eq_mid, eq_high (dB -40..6, -40 = kill), filter (-1..1), fader (0..1), gain (dB -24..12), fx0..fx3 (amount 0..1)
+* `at` = bars from the transition start (0..bars, quarter-bar steps); max 8 breakpoints per control, 12 controls
+* linear between breakpoints on the beat clock, read on the 50 ms step; the last value holds
+* a control without breakpoints keeps the auto-mix curve; bass swap and filter sweep do not apply to a control the curve sets
+* last beat: the curve goes to neutral (incoming eq and filter 0, fader 1; outgoing fader 0), then the outgoing deck stops as before
+* a bad lane (range, order, count) is dropped and listed in `refused` (index -1); the rest runs
+* settings -> LIVE & SYNC -> AI CONTROL -> KI-DJ -> transition curve: "AI drives the whole transition" (default) or "AutoMix curve, AI gain and FX only" (curve refused)
 
 ## ◆ EXAMPLES
 
@@ -689,6 +702,10 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
   `minos_mix {control:"fader", deck:0, value:0, ramp:{bars:8}, quantize:"bar"}`
 * transition from deck A to the free deck, 32 bars, start at the next phrase:
   `minos_transition {from:0, to:"…", bars:32, start:"phrase"}`
+* same, with fx on the incoming deck from bar 8 for 8 bars:
+  `minos_transition {from:0, to:"…", bars:16, moves:[{deck:"in", control:"fx", unit:1, amount:0.6, at:8, ramp:8}]}`
+* 16 bars, bass swap at half, filter sweep out:
+  `minos_transition {from:0, to:"…", bars:16, curve:{out:{eq_low:[{at:0,value:0},{at:8,value:-40}], filter:[{at:8,value:0},{at:16,value:-1}]}, in:{eq_low:[{at:0,value:-40},{at:8,value:0}]}}}`
 * wait until the outgoing track has 30 s left:
   `minos_wait {until:"remaining_lt", deck:0, value:30}`
 * hot cue 3 on deck B, then jump back to it:
@@ -698,6 +715,7 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
 
 * slip, censor, brake, load next/previous track: not in MINOS yet
 * transition to the free deck only (decks A and B); decks C and D are not used by auto-mix
+* transition moves on eq_low, eq_mid, eq_high, filter, fader: refused; set them in `curve` (bass swap and filter sweep hold them when no curve is given); gain and fx run as moves
 
 ## ◆ KI-DJ
 
@@ -708,6 +726,11 @@ claude mcp add minos -- /Applications/MINOS-741.app/Contents/MacOS/minos-mcp
 * loop: `state` -> `suggest` (candidates, `scope` playlist or collection) -> model answer as JSON -> `transition`
 * wakes at start, at `remaining_lt` (decide before the end, default 90 s), at `transition_done` and on style change
 * the answer must name a candidate; bars 8/16/32; invalid tracks, no answer within the deadline (default 20 s) or an error -> top candidate of suggest (automix pick)
-* moves (EQ, filter, gain, fader, FX) only with "may move EQ, filter and FX"; ramps run on the beat clock
+* moves only with "may move EQ, filter and FX"; gain and fx run as moves (out/in, at, ramp)
+* with "AI drives the whole transition" (settings -> transition curve), the model returns a `curve` for EQ, filter and fader, independent of "may move EQ, filter and FX"; no curve or an invalid one -> auto-mix curve, noted in the log
 * log: last 50 decisions (track, reason, ms, fallback, ok); restarts up to 3 times if the process ends
 * no key in arguments, environment or log; the key goes over stdin once
+
+## ◆ LANGUAGE
+
+* replies and errors on the socket and MCP are English
